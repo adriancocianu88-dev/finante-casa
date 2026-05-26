@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { supabase } from "./supabase";
-
+//aici ai parola, te rog nu abuza
 const PAROLA_CORECTA = "adriansisorina2026";
 
 function LoginScreen({ onLogin }) {
