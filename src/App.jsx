@@ -2,6 +2,47 @@ import { useState, useMemo, useEffect } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { supabase } from "./supabase";
 
+const PAROLA_CORECTA = "adriansisorina2026";
+
+function LoginScreen({ onLogin }) {
+  const [parola, setParola] = useState("");
+  const [eroare, setEroare] = useState(false);
+
+  function tryLogin() {
+    if (parola === PAROLA_CORECTA) {
+      localStorage.setItem("finante_auth", "1");
+      onLogin();
+    } else {
+      setEroare(true);
+      setTimeout(() => setEroare(false), 2000);
+    }
+  }
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#0f1117", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: 24 }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');`}</style>
+      <div style={{ background: "#1a1d26", border: "1px solid #2a2d3a", borderRadius: 20, padding: 36, width: "100%", maxWidth: 360, textAlign: "center" }}>
+        <div style={{ width: 56, height: 56, background: "linear-gradient(135deg, #4a90d9, #2ecc71)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, margin: "0 auto 20px" }}>₿</div>
+        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, marginBottom: 6, color: "#e8e4dc" }}>Finanțe Acasă</div>
+        <div style={{ fontSize: 13, color: "#666", marginBottom: 28 }}>Introdu parola pentru acces</div>
+        <input
+          type="password"
+          placeholder="Parolă"
+          value={parola}
+          onChange={e => setParola(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && tryLogin()}
+          style={{ background: "#12141c", border: `1px solid ${eroare ? "#e05c4a" : "#2a2d3a"}`, borderRadius: 10, padding: "12px 16px", color: "#e8e4dc", fontFamily: "'DM Sans', sans-serif", fontSize: 15, width: "100%", outline: "none", marginBottom: 12, transition: "border 0.2s", boxSizing: "border-box" }}
+        />
+        {eroare && <div style={{ color: "#e05c4a", fontSize: 12, marginBottom: 10 }}>Parolă incorectă</div>}
+        <button onClick={tryLogin} style={{ background: "#4a90d9", border: "none", color: "white", padding: "13px", borderRadius: 10, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 600, width: "100%" }}>
+          Intră
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
 const CULORI_CHELTUIELI = ["#e05c4a","#e8954a","#e8c94a","#6dbf67","#4a90d9","#9b6dbf","#bf6d9b","#4abfbf"];
 const CULORI_VENITURI = ["#2ecc71","#27ae60","#1abc9c","#16a085"];
 const CULORI_PERSOANE = { "Adrian": "#4a90d9", "Sorina": "#e8954a", "Ambii": "#9b6dbf" };
@@ -30,7 +71,7 @@ function BaraProcentaj({ label, procent, culoare }) {
   );
 }
 
-export default function App() {
+function AppInner() {
   const azi = new Date();
   const [tab, setTab] = useState("dashboard");
   const [lunaSelectata, setLunaSelectata] = useState(azi.getMonth());
@@ -374,4 +415,10 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+export default function App() {
+  const [autentificat, setAutentificat] = useState(!!localStorage.getItem("finante_auth"));
+  if (!autentificat) return <LoginScreen onLogin={() => setAutentificat(true)} />;
+  return <AppInner />;
 }
