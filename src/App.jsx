@@ -19,11 +19,11 @@ function LoginScreen({ onLogin }) {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans', sans-serif", padding: 24 }}>
+    <div style={{ minHeight: "100vh", background: "#0f1117", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit', sans-serif", padding: 24 }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');`}</style>
       <div style={{ background: "#1a1d26", border: "1px solid #2a2d3a", borderRadius: 20, padding: 36, width: "100%", maxWidth: 360, textAlign: "center" }}>
         <div style={{ width: 56, height: 56, background: "linear-gradient(135deg, #4a90d9, #2ecc71)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, margin: "0 auto 20px" }}>₿</div>
-        <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, fontWeight: 700, marginBottom: 6, color: "#e8e4dc" }}>Finanțe Acasă</div>
+        <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 700, marginBottom: 6, color: "#e8e4dc" }}>Finanțe Acasă</div>
         <div style={{ fontSize: 13, color: "#666", marginBottom: 28 }}>Introdu parola pentru acces</div>
         <input
           type="password"
@@ -31,10 +31,10 @@ function LoginScreen({ onLogin }) {
           value={parola}
           onChange={e => setParola(e.target.value)}
           onKeyDown={e => e.key === "Enter" && tryLogin()}
-          style={{ background: "#12141c", border: `1px solid ${eroare ? "#e05c4a" : "#2a2d3a"}`, borderRadius: 10, padding: "12px 16px", color: "#e8e4dc", fontFamily: "'DM Sans', sans-serif", fontSize: 15, width: "100%", outline: "none", marginBottom: 12, transition: "border 0.2s", boxSizing: "border-box" }}
+          style={{ background: "#12141c", border: `1px solid ${eroare ? "#e05c4a" : "#2a2d3a"}`, borderRadius: 10, padding: "12px 16px", color: "#e8e4dc", fontFamily: "'Outfit', sans-serif", fontSize: 15, width: "100%", outline: "none", marginBottom: 12, transition: "border 0.2s", boxSizing: "border-box" }}
         />
         {eroare && <div style={{ color: "#e05c4a", fontSize: 12, marginBottom: 10 }}>Parolă incorectă</div>}
-        <button onClick={tryLogin} style={{ background: "#4a90d9", border: "none", color: "white", padding: "13px", borderRadius: 10, cursor: "pointer", fontFamily: "'DM Sans', sans-serif", fontSize: 15, fontWeight: 600, width: "100%" }}>
+        <button onClick={tryLogin} style={{ background: "#4a90d9", border: "none", color: "white", padding: "13px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 600, width: "100%" }}>
           Intră
         </button>
       </div>
@@ -163,27 +163,27 @@ function AppInner() {
   const tooltipStyle = { background: "#fff", border: "1px solid #ddd", borderRadius: 8, color: "#111", fontSize: 12 };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0f1117", fontFamily: "'DM Sans', sans-serif", color: "#e8e4dc" }}>
+    <div style={{ minHeight: "100vh", background: "#0f1117", fontFamily: "'Outfit', sans-serif", color: "#e8e4dc" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Outfit:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #3a3d4a; border-radius: 2px; }
         input, select { outline: none; }
         .card { background: #1a1d26; border: 1px solid #2a2d3a; border-radius: 16px; padding: 16px; }
-        .nav-btn { background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; color: #888; white-space: nowrap; }
+        .nav-btn { background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; color: #888; white-space: nowrap; }
         .nav-btn.active { background: #2a2d3a; color: #e8e4dc; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
         .badge-venit { background: #1a3a2a; color: #2ecc71; }
         .badge-cheltuiala { background: #3a1a1a; color: #e05c4a; }
-        .input-field { background: #12141c; border: 1px solid #2a2d3a; border-radius: 10px; padding: 10px 14px; color: #e8e4dc; font-family: 'DM Sans', sans-serif; font-size: 14px; width: 100%; transition: border 0.2s; }
+        .input-field { background: #12141c; border: 1px solid #2a2d3a; border-radius: 10px; padding: 10px 14px; color: #e8e4dc; font-family: 'Outfit', sans-serif; font-size: 14px; width: 100%; transition: border 0.2s; }
         .input-field:focus { border-color: #4a90d9; }
-        .btn-add { background: #4a90d9; border: none; color: white; padding: 14px; border-radius: 10px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; width: 100%; transition: all 0.2s; }
+        .btn-add { background: #4a90d9; border: none; color: white; padding: 14px; border-radius: 10px; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; width: 100%; transition: all 0.2s; }
         .btn-delete { background: none; border: 1px solid #2a2d3a; color: #666; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; flex-shrink: 0; }
-        .luna-btn { background: none; border: 1px solid #2a2d3a; color: #888; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap; }
+        .luna-btn { background: none; border: 1px solid #2a2d3a; color: #888; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: 'Outfit', sans-serif; transition: all 0.2s; white-space: nowrap; }
         .luna-btn.activa { background: #2a2d3a; color: #e8e4dc; border-color: #4a90d9; }
         .stat-card { background: #1a1d26; border: 1px solid #2a2d3a; border-radius: 14px; padding: 14px; }
-        .tip-btn { flex: 1; padding: 10px; border: 1px solid #2a2d3a; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; transition: all 0.2s; background: none; color: #888; }
+        .tip-btn { flex: 1; padding: 10px; border: 1px solid #2a2d3a; border-radius: 8px; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500; transition: all 0.2s; background: none; color: #888; }
         .tip-btn.activ-venit { background: #1a3a2a; border-color: #2ecc71; color: #2ecc71; }
         .tip-btn.activ-cheltuiala { background: #3a1a1a; border-color: #e05c4a; color: #e05c4a; }
         .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
@@ -201,7 +201,7 @@ function AppInner() {
         <div style={{ maxWidth: 920, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #4a90d9, #2ecc71)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>₿</div>
-            <span style={{ fontFamily: "'Playfair Display', serif", fontSize: 16, fontWeight: 700 }}>Finanțe Acasă</span>
+            <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700 }}>Finanțe Acasă</span>
           </div>
           <nav style={{ display: "flex", gap: 2 }}>
             {[["dashboard","📊"],["tranzactii","💳"],["adauga","＋"]].map(([key, icon]) => (
@@ -253,7 +253,7 @@ function AppInner() {
                       <span style={{ fontSize: 11, color: "#888" }}>{label}</span>
                       <span style={{ width: 22, height: 22, background: color + "20", color, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>{icon}</span>
                     </div>
-                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, fontWeight: 700, color }}>{formatRon(val)}</div>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 700, color }}>{formatRon(val)}</div>
                   </div>
                 ))}
               </div>
@@ -340,7 +340,7 @@ function AppInner() {
                         <span style={{ fontSize: 11, color: CULORI_PERSOANE[t.persoana] || "#888", fontWeight: 500 }}>👤 {t.persoana}</span>
                       </div>
                     </div>
-                    <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 14, fontWeight: 700, color: t.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, color: t.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
                       {t.tip === "venit" ? "+" : "-"}{formatRon(t.suma)}
                     </div>
                     <button className="btn-delete" onClick={() => stergeTranzactie(t.id)}>✕</button>
@@ -353,7 +353,7 @@ function AppInner() {
           {/* ADAUGA */}
           {tab === "adauga" && (
             <div className="card">
-              <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, marginBottom: 4 }}>Tranzacție nouă</div>
+              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, marginBottom: 4 }}>Tranzacție nouă</div>
               <div style={{ fontSize: 11, color: "#555", marginBottom: 20 }}>{LUNI[form.luna]} {form.an} · se va adăuga în luna selectată</div>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
