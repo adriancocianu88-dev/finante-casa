@@ -1,52 +1,35 @@
 import { useState, useMemo, useEffect } from "react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { supabase } from "./supabase";
-//aici ai parola, te rog nu abuza
+
 const PAROLA_CORECTA = "adriansisorina2026";
 
 function LoginScreen({ onLogin }) {
   const [parola, setParola] = useState("");
   const [eroare, setEroare] = useState(false);
-
   function tryLogin() {
-    if (parola === PAROLA_CORECTA) {
-      localStorage.setItem("finante_auth", "1");
-      onLogin();
-    } else {
-      setEroare(true);
-      setTimeout(() => setEroare(false), 2000);
-    }
+    if (parola === PAROLA_CORECTA) { localStorage.setItem("finante_auth", "1"); onLogin(); }
+    else { setEroare(true); setTimeout(() => setEroare(false), 2000); }
   }
-
   return (
     <div style={{ minHeight: "100vh", background: "#0f1117", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit', sans-serif", padding: 24 }}>
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');`}</style>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');`}</style>
       <div style={{ background: "#1a1d26", border: "1px solid #2a2d3a", borderRadius: 20, padding: 36, width: "100%", maxWidth: 360, textAlign: "center" }}>
         <div style={{ width: 56, height: 56, background: "linear-gradient(135deg, #4a90d9, #2ecc71)", borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, margin: "0 auto 20px" }}>₿</div>
         <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 22, fontWeight: 700, marginBottom: 6, color: "#e8e4dc" }}>Finanțe Acasă</div>
         <div style={{ fontSize: 13, color: "#666", marginBottom: 28 }}>Introdu parola pentru acces</div>
-        <input
-          type="password"
-          placeholder="Parolă"
-          value={parola}
-          onChange={e => setParola(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && tryLogin()}
-          style={{ background: "#12141c", border: `1px solid ${eroare ? "#e05c4a" : "#2a2d3a"}`, borderRadius: 10, padding: "12px 16px", color: "#e8e4dc", fontFamily: "'Outfit', sans-serif", fontSize: 15, width: "100%", outline: "none", marginBottom: 12, transition: "border 0.2s", boxSizing: "border-box" }}
-        />
+        <input type="password" placeholder="Parolă" value={parola} onChange={e => setParola(e.target.value)} onKeyDown={e => e.key === "Enter" && tryLogin()}
+          style={{ background: "#12141c", border: `1px solid ${eroare ? "#e05c4a" : "#2a2d3a"}`, borderRadius: 10, padding: "12px 16px", color: "#e8e4dc", fontFamily: "'Outfit', sans-serif", fontSize: 15, width: "100%", outline: "none", marginBottom: 12, transition: "border 0.2s", boxSizing: "border-box" }} />
         {eroare && <div style={{ color: "#e05c4a", fontSize: 12, marginBottom: 10 }}>Parolă incorectă</div>}
-        <button onClick={tryLogin} style={{ background: "#4a90d9", border: "none", color: "white", padding: "13px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 600, width: "100%" }}>
-          Intră
-        </button>
+        <button onClick={tryLogin} style={{ background: "#4a90d9", border: "none", color: "white", padding: "13px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 15, fontWeight: 600, width: "100%" }}>Intră</button>
       </div>
     </div>
   );
 }
 
-
 const CULORI_CHELTUIELI = ["#e05c4a","#e8954a","#e8c94a","#6dbf67","#4a90d9","#9b6dbf","#bf6d9b","#4abfbf"];
 const CULORI_VENITURI = ["#2ecc71","#27ae60","#1abc9c","#16a085"];
 const CULORI_PERSOANE = { "Adrian": "#4a90d9", "Sorina": "#e8954a", "Ambii": "#9b6dbf" };
-
 const CATEGORII_CHELTUIELI = ["Cumpărături","Transport","Credit","Asigurări/Pensie","Lifestyle / Distracție","Farmacie/Sănătate","Utilități"];
 const CATEGORII_VENITURI = ["Salariu","Bonuri de masă","Investiții","Chirie primită","Alte venituri"];
 const PERSOANE = ["Adrian","Sorina","Ambii"];
@@ -74,13 +57,21 @@ function BaraProcentaj({ label, procent, culoare }) {
 function AppInner() {
   const azi = new Date();
   const [tab, setTab] = useState("dashboard");
-  //const [lunaSelectata, setLunaSelectata] = useState(azi.getMonth());
-  //const [anSelectat, setAnSelectat] = useState(azi.getFullYear());
   const [lunaSelectata, setLunaSelectata] = useState(Number(localStorage.getItem("luna_sel") ?? azi.getMonth()));
   const [anSelectat, setAnSelectat] = useState(Number(localStorage.getItem("an_sel") ?? azi.getFullYear()));
   const [tranzactii, setTranzactii] = useState([]);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [aplicatSuccess, setAplicatSuccess] = useState(false);
+
+  // Recurente salvate in localStorage
+  const [recurente, setRecurente] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("recurente") || "[]"); } catch { return []; }
+  });
+  const [formRec, setFormRec] = useState({
+    tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0], suma: "", descriere: "", persoana: "Adrian"
+  });
+
   const [form, setForm] = useState({
     tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0],
     suma: "", descriere: "", luna: azi.getMonth(), an: azi.getFullYear(), persoana: "Adrian"
@@ -94,17 +85,43 @@ function AppInner() {
       setLoading(false);
     }
     load();
-    const channel = supabase
-      .channel("tranzactii-changes")
+    const channel = supabase.channel("tranzactii-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "tranzactii" }, () => load())
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, []);
 
-  //function selectLuna(i) { setLunaSelectata(i); setForm(f => ({ ...f, luna: i })); }
-  //function selectAn(a) { setAnSelectat(a); setForm(f => ({ ...f, an: a })); }
   function selectLuna(i) { setLunaSelectata(i); setForm(f => ({ ...f, luna: i })); localStorage.setItem("luna_sel", i); }
   function selectAn(a) { setAnSelectat(a); setForm(f => ({ ...f, an: a })); localStorage.setItem("an_sel", a); }
+
+  function salveazaRecurente(lista) {
+    setRecurente(lista);
+    localStorage.setItem("recurente", JSON.stringify(lista));
+  }
+
+  function adaugaRecurenta() {
+    if (!formRec.suma || isNaN(Number(formRec.suma))) return;
+    const noua = { ...formRec, suma: Number(formRec.suma), id: Date.now() };
+    salveazaRecurente([...recurente, noua]);
+    setFormRec(f => ({ ...f, suma: "", descriere: "" }));
+  }
+
+  function stergeRecurenta(id) {
+    salveazaRecurente(recurente.filter(r => r.id !== id));
+  }
+
+  async function aplicaRecurente() {
+    if (recurente.length === 0) return;
+    const inserts = recurente.map(r => ({
+      tip: r.tip, categorie: r.categorie, suma: r.suma,
+      descriere: r.descriere, luna: lunaSelectata, an: anSelectat, persoana: r.persoana
+    }));
+    const { error } = await supabase.from("tranzactii").insert(inserts);
+    if (!error) {
+      setAplicatSuccess(true);
+      setTimeout(() => setAplicatSuccess(false), 3000);
+    }
+  }
 
   const tranzactiiLuna = useMemo(
     () => tranzactii.filter(t => t.luna === lunaSelectata && t.an === anSelectat),
@@ -153,11 +170,7 @@ function AppInner() {
       tip: form.tip, categorie: form.categorie, suma: Number(form.suma),
       descriere: form.descriere, luna: form.luna, an: form.an, persoana: form.persoana
     }]);
-    if (!error) {
-      setForm(f => ({ ...f, suma: "", descriere: "" }));
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 2500);
-    }
+    if (!error) { setForm(f => ({ ...f, suma: "", descriere: "" })); setSuccess(true); setTimeout(() => setSuccess(false), 2500); }
   }
 
   async function stergeTranzactie(id) {
@@ -169,13 +182,13 @@ function AppInner() {
   return (
     <div style={{ minHeight: "100vh", background: "#0f1117", fontFamily: "'Outfit', sans-serif", color: "#e8e4dc" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Outfit:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #3a3d4a; border-radius: 2px; }
         input, select { outline: none; }
         .card { background: #1a1d26; border: 1px solid #2a2d3a; border-radius: 16px; padding: 16px; }
-        .nav-btn { background: none; border: none; cursor: pointer; padding: 8px 14px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; transition: all 0.2s; color: #888; white-space: nowrap; }
+        .nav-btn { background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 10px; font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 500; transition: all 0.2s; color: #888; white-space: nowrap; }
         .nav-btn.active { background: #2a2d3a; color: #e8e4dc; }
         .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
         .badge-venit { background: #1a3a2a; color: #2ecc71; }
@@ -183,6 +196,8 @@ function AppInner() {
         .input-field { background: #12141c; border: 1px solid #2a2d3a; border-radius: 10px; padding: 10px 14px; color: #e8e4dc; font-family: 'Outfit', sans-serif; font-size: 14px; width: 100%; transition: border 0.2s; }
         .input-field:focus { border-color: #4a90d9; }
         .btn-add { background: #4a90d9; border: none; color: white; padding: 14px; border-radius: 10px; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; width: 100%; transition: all 0.2s; }
+        .btn-aplica { background: #9b6dbf; border: none; color: white; padding: 13px; border-radius: 10px; cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; width: 100%; transition: all 0.2s; }
+        .btn-aplica:hover { background: #8a5cae; }
         .btn-delete { background: none; border: 1px solid #2a2d3a; color: #666; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; flex-shrink: 0; }
         .luna-btn { background: none; border: 1px solid #2a2d3a; color: #888; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: 'Outfit', sans-serif; transition: all 0.2s; white-space: nowrap; }
         .luna-btn.activa { background: #2a2d3a; color: #e8e4dc; border-color: #4a90d9; }
@@ -205,15 +220,13 @@ function AppInner() {
         <div style={{ maxWidth: 920, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 56 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 28, height: 28, background: "linear-gradient(135deg, #4a90d9, #2ecc71)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>₿</div>
-            <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 16, fontWeight: 700 }}>Finanțe Acasă</span>
+            <span style={{ fontSize: 16, fontWeight: 700 }}>Finanțe Acasă</span>
           </div>
           <nav style={{ display: "flex", gap: 2 }}>
-            {[["dashboard","📊"],["tranzactii","💳"],["adauga","＋"]].map(([key, icon]) => (
+            {[["dashboard","📊","Dashboard"],["tranzactii","💳","Tranzacții"],["adauga","＋","Adaugă"],["recurente","🔄","Recurente"]].map(([key, icon, label]) => (
               <button key={key} className={`nav-btn ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>
                 <span>{icon}</span>
-                <span style={{ marginLeft: 4, display: window.innerWidth < 400 ? "none" : "inline" }}>
-                  {key === "dashboard" ? "Dashboard" : key === "tranzactii" ? "Tranzacții" : "Adaugă"}
-                </span>
+                <span style={{ marginLeft: 4 }}>{label}</span>
               </button>
             ))}
           </nav>
@@ -221,31 +234,30 @@ function AppInner() {
       </div>
 
       <div style={{ maxWidth: 920, margin: "0 auto", padding: "20px 16px 40px" }}>
-
         {loading && <div style={{ textAlign: "center", padding: "60px 0", color: "#555" }}>Se încarcă...</div>}
 
         {!loading && <>
-          {/* An + Luna */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 10, color: "#555", fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase", flexShrink: 0 }}>An</span>
-              <select className="input-field" value={anSelectat} onChange={e => selectAn(Number(e.target.value))} style={{ width: 100 }}>
-                {ANI.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
+          {/* An + Luna — ascunse pe tabul recurente */}
+          {tab !== "recurente" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 10, color: "#555", fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase", flexShrink: 0 }}>An</span>
+                <select className="input-field" value={anSelectat} onChange={e => selectAn(Number(e.target.value))} style={{ width: 100 }}>
+                  {ANI.map(a => <option key={a} value={a}>{a}</option>)}
+                </select>
+              </div>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
+                <span style={{ fontSize: 10, color: "#555", fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase", flexShrink: 0 }}>Luna</span>
+                {LUNI.map((l, i) => (
+                  <button key={i} className={`luna-btn ${lunaSelectata === i ? "activa" : ""}`} onClick={() => selectLuna(i)}>{l}</button>
+                ))}
+              </div>
             </div>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
-              <span style={{ fontSize: 10, color: "#555", fontWeight: 600, letterSpacing: "0.8px", textTransform: "uppercase", flexShrink: 0 }}>Luna</span>
-              {LUNI.map((l, i) => (
-                <button key={i} className={`luna-btn ${lunaSelectata === i ? "activa" : ""}`} onClick={() => selectLuna(i)}>{l}</button>
-              ))}
-            </div>
-          </div>
+          )}
 
           {/* DASHBOARD */}
           {tab === "dashboard" && (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-              {/* Stat cards — 3 col desktop, 2 col mobile */}
               <div className="stat-row" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
                 {[
                   { label: "Venituri", val: totalVenituri, color: "#2ecc71", icon: "↑" },
@@ -257,22 +269,16 @@ function AppInner() {
                       <span style={{ fontSize: 11, color: "#888" }}>{label}</span>
                       <span style={{ width: 22, height: 22, background: color + "20", color, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12 }}>{icon}</span>
                     </div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 18, fontWeight: 700, color }}>{formatRon(val)}</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color }}>{formatRon(val)}</div>
                   </div>
                 ))}
               </div>
-
-              {/* Procente */}
               {procentePersoane && totalCheltuieli > 0 && (
                 <div className="card">
                   <div style={{ fontSize: 12, color: "#888", marginBottom: 12, fontWeight: 500 }}>Cine a cheltuit — {LUNI[lunaSelectata]} {anSelectat}</div>
-                  {PERSOANE.map(p => procentePersoane[p] > 0 && (
-                    <BaraProcentaj key={p} label={p} procent={procentePersoane[p]} culoare={CULORI_PERSOANE[p]} />
-                  ))}
+                  {PERSOANE.map(p => procentePersoane[p] > 0 && <BaraProcentaj key={p} label={p} procent={procentePersoane[p]} culoare={CULORI_PERSOANE[p]} />)}
                 </div>
               )}
-
-              {/* Pie charts — stacked pe mobil */}
               <div className="grid-2">
                 <div className="card">
                   <div style={{ fontSize: 12, color: "#888", marginBottom: 10, fontWeight: 500 }}>Cheltuieli pe categorii</div>
@@ -288,7 +294,6 @@ function AppInner() {
                     </ResponsiveContainer>
                   ) : <div style={{ color: "#555", fontSize: 12, textAlign: "center", padding: "40px 0" }}>Nicio cheltuială</div>}
                 </div>
-
                 <div className="card">
                   <div style={{ fontSize: 12, color: "#888", marginBottom: 10, fontWeight: 500 }}>Surse de venit</div>
                   {dataVenituri.length > 0 ? (
@@ -304,8 +309,6 @@ function AppInner() {
                   ) : <div style={{ color: "#555", fontSize: 12, textAlign: "center", padding: "40px 0" }}>Niciun venit</div>}
                 </div>
               </div>
-
-              {/* Bar chart */}
               <div className="card">
                 <div style={{ fontSize: 12, color: "#888", marginBottom: 10, fontWeight: 500 }}>Evoluție {anSelectat}</div>
                 <ResponsiveContainer width="100%" height={180}>
@@ -325,12 +328,8 @@ function AppInner() {
           {/* TRANZACTII */}
           {tab === "tranzactii" && (
             <div className="card">
-              <div style={{ fontSize: 12, color: "#888", marginBottom: 16, fontWeight: 500 }}>
-                {tranzactiiLuna.length} tranzacții în {LUNI[lunaSelectata]} {anSelectat}
-              </div>
-              {tranzactiiLuna.length === 0 && (
-                <div style={{ color: "#555", textAlign: "center", padding: "40px 0" }}>Nicio tranzacție în această lună</div>
-              )}
+              <div style={{ fontSize: 12, color: "#888", marginBottom: 16, fontWeight: 500 }}>{tranzactiiLuna.length} tranzacții în {LUNI[lunaSelectata]} {anSelectat}</div>
+              {tranzactiiLuna.length === 0 && <div style={{ color: "#555", textAlign: "center", padding: "40px 0" }}>Nicio tranzacție în această lună</div>}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {[...tranzactiiLuna].sort((a,b) => b.id - a.id).map(t => (
                   <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#12141c", borderRadius: 10, border: "1px solid #2a2d3a" }}>
@@ -344,7 +343,7 @@ function AppInner() {
                         <span style={{ fontSize: 11, color: CULORI_PERSOANE[t.persoana] || "#888", fontWeight: 500 }}>👤 {t.persoana}</span>
                       </div>
                     </div>
-                    <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, color: t.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: t.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
                       {t.tip === "venit" ? "+" : "-"}{formatRon(t.suma)}
                     </div>
                     <button className="btn-delete" onClick={() => stergeTranzactie(t.id)}>✕</button>
@@ -357,14 +356,12 @@ function AppInner() {
           {/* ADAUGA */}
           {tab === "adauga" && (
             <div className="card">
-              <div style={{ fontFamily: "'Outfit', sans-serif", fontSize: 20, marginBottom: 4 }}>Tranzacție nouă</div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>Tranzacție nouă</div>
               <div style={{ fontSize: 11, color: "#555", marginBottom: 20 }}>{LUNI[form.luna]} {form.an} · se va adăuga în luna selectată</div>
-
               <div style={{ display: "flex", gap: 8, marginBottom: 18 }}>
                 <button className={`tip-btn ${form.tip === "cheltuiala" ? "activ-cheltuiala" : ""}`} onClick={() => setForm(f => ({ ...f, tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0] }))}>↓ Cheltuială</button>
                 <button className={`tip-btn ${form.tip === "venit" ? "activ-venit" : ""}`} onClick={() => setForm(f => ({ ...f, tip: "venit", categorie: CATEGORII_VENITURI[0] }))}>↑ Venit</button>
               </div>
-
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div>
                   <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Sumă (RON)</label>
@@ -412,6 +409,86 @@ function AppInner() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* RECURENTE */}
+          {tab === "recurente" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+              {/* Buton aplica */}
+              <div className="card">
+                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Aplică recurentele în {LUNI[lunaSelectata]} {anSelectat}</div>
+                <div style={{ fontSize: 12, color: "#666", marginBottom: 14 }}>Adaugă toate tranzacțiile de mai jos dintr-un singur click</div>
+                <button className="btn-aplica" onClick={aplicaRecurente} disabled={recurente.length === 0} style={{ opacity: recurente.length === 0 ? 0.5 : 1 }}>
+                  🔄 Aplică {recurente.length} tranzacții în {LUNI[lunaSelectata]} {anSelectat}
+                </button>
+                {aplicatSuccess && (
+                  <div style={{ marginTop: 12, background: "#1a2a3a", border: "1px solid #9b6dbf", borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 18 }}>✅</span>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#9b6dbf" }}>Aplicate cu succes în {LUNI[lunaSelectata]} {anSelectat}!</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Lista recurente */}
+              {recurente.length > 0 && (
+                <div className="card">
+                  <div style={{ fontSize: 12, color: "#888", marginBottom: 12, fontWeight: 500 }}>Tranzacții salvate ({recurente.length})</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {recurente.map(r => (
+                      <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#12141c", borderRadius: 10, border: "1px solid #2a2d3a" }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 8, background: r.tip === "venit" ? "#1a3a2a" : "#3a1a1a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+                          {r.tip === "venit" ? "↑" : "↓"}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{r.descriere || r.categorie}</div>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                            <span className={`badge badge-${r.tip === "venit" ? "venit" : "cheltuiala"}`}>{r.categorie}</span>
+                            <span style={{ fontSize: 11, color: CULORI_PERSOANE[r.persoana] || "#888", fontWeight: 500 }}>👤 {r.persoana}</span>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: r.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
+                          {r.tip === "venit" ? "+" : "-"}{formatRon(r.suma)}
+                        </div>
+                        <button className="btn-delete" onClick={() => stergeRecurenta(r.id)}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Formular adauga recurenta */}
+              <div className="card">
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Adaugă tranzacție recurentă</div>
+                <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+                  <button className={`tip-btn ${formRec.tip === "cheltuiala" ? "activ-cheltuiala" : ""}`} onClick={() => setFormRec(f => ({ ...f, tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0] }))}>↓ Cheltuială</button>
+                  <button className={`tip-btn ${formRec.tip === "venit" ? "activ-venit" : ""}`} onClick={() => setFormRec(f => ({ ...f, tip: "venit", categorie: CATEGORII_VENITURI[0] }))}>↑ Venit</button>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div>
+                    <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Sumă (RON)</label>
+                    <input className="input-field" type="number" inputMode="decimal" placeholder="ex: 1500" value={formRec.suma} onChange={e => setFormRec(f => ({ ...f, suma: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Categorie</label>
+                    <select className="input-field" value={formRec.categorie} onChange={e => setFormRec(f => ({ ...f, categorie: e.target.value }))}>
+                      {(formRec.tip === "venit" ? CATEGORII_VENITURI : CATEGORII_CHELTUIELI).map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Descriere</label>
+                    <input className="input-field" type="text" placeholder="ex: Rată bancă, Salariu..." value={formRec.descriere} onChange={e => setFormRec(f => ({ ...f, descriere: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Persoană</label>
+                    <select className="input-field" value={formRec.persoana} onChange={e => setFormRec(f => ({ ...f, persoana: e.target.value }))}>
+                      {PERSOANE.map(p => <option key={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <button className="btn-add" onClick={adaugaRecurenta}>+ Salvează recurentă</button>
+                </div>
               </div>
             </div>
           )}
