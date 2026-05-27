@@ -74,8 +74,10 @@ function BaraProcentaj({ label, procent, culoare }) {
 function AppInner() {
   const azi = new Date();
   const [tab, setTab] = useState("dashboard");
-  const [lunaSelectata, setLunaSelectata] = useState(azi.getMonth());
-  const [anSelectat, setAnSelectat] = useState(azi.getFullYear());
+  //const [lunaSelectata, setLunaSelectata] = useState(azi.getMonth());
+  //const [anSelectat, setAnSelectat] = useState(azi.getFullYear());
+  const [lunaSelectata, setLunaSelectata] = useState(Number(localStorage.getItem("luna_sel") ?? azi.getMonth()));
+  const [anSelectat, setAnSelectat] = useState(Number(localStorage.getItem("an_sel") ?? azi.getFullYear()));
   const [tranzactii, setTranzactii] = useState([]);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -99,8 +101,10 @@ function AppInner() {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  function selectLuna(i) { setLunaSelectata(i); setForm(f => ({ ...f, luna: i })); }
-  function selectAn(a) { setAnSelectat(a); setForm(f => ({ ...f, an: a })); }
+  //function selectLuna(i) { setLunaSelectata(i); setForm(f => ({ ...f, luna: i })); }
+  //function selectAn(a) { setAnSelectat(a); setForm(f => ({ ...f, an: a })); }
+  function selectLuna(i) { setLunaSelectata(i); setForm(f => ({ ...f, luna: i })); localStorage.setItem("luna_sel", i); }
+  function selectAn(a) { setAnSelectat(a); setForm(f => ({ ...f, an: a })); localStorage.setItem("an_sel", a); }
 
   const tranzactiiLuna = useMemo(
     () => tranzactii.filter(t => t.luna === lunaSelectata && t.an === anSelectat),
