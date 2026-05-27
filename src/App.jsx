@@ -37,7 +37,7 @@ const LUNI = ["Ian","Feb","Mar","Apr","Mai","Iun","Iul","Aug","Sep","Oct","Nov",
 const ANI = Array.from({ length: 75 }, (_, i) => 2026 + i);
 
 function formatRon(val) {
-  return new Intl.NumberFormat("ro-RO", { style: "currency", currency: "RON", maximumFractionDigits: 0 }).format(val);
+  return new Intl.NumberFormat("ro-RO", { style: "currency", currency: "RON", maximumFractionDigits: 2, minimumFractionDigits: 0 }).format(val);
 }
 
 function BaraProcentaj({ label, procent, culoare }) {
@@ -71,6 +71,8 @@ function AppInner() {
   const [formRec, setFormRec] = useState({
     tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0], suma: "", descriere: "", persoana: "Adrian"
   });
+  const [editandId, setEditandId] = useState(null);
+  const [formEdit, setFormEdit] = useState({});
 
   const [form, setForm] = useState({
     tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0],
@@ -108,6 +110,17 @@ function AppInner() {
 
   function stergeRecurenta(id) {
     salveazaRecurente(recurente.filter(r => r.id !== id));
+  }
+
+  function incepeEditare(r) {
+    setEditandId(r.id);
+    setFormEdit({ tip: r.tip, categorie: r.categorie, suma: r.suma, descriere: r.descriere, persoana: r.persoana });
+  }
+
+  function salveazaEditare(id) {
+    const updated = recurente.map(r => r.id === id ? { ...r, ...formEdit, suma: Number(formEdit.suma) } : r);
+    salveazaRecurente(updated);
+    setEditandId(null);
   }
 
   async function aplicaRecurente() {
@@ -365,7 +378,7 @@ function AppInner() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 <div>
                   <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Sumă (RON)</label>
-                  <input className="input-field" type="number" inputMode="decimal" placeholder="ex: 500" value={form.suma} onChange={e => setForm(f => ({ ...f, suma: e.target.value }))} />
+                  <input className="input-field" type="number" inputMode="decimal" step="0.01" placeholder="ex: 500" value={form.suma} onChange={e => setForm(f => ({ ...f, suma: e.target.value }))} />
                 </div>
                 <div>
                   <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Categorie</label>
@@ -438,21 +451,47 @@ function AppInner() {
                   <div style={{ fontSize: 12, color: "#888", marginBottom: 12, fontWeight: 500 }}>Tranzacții salvate ({recurente.length})</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {recurente.map(r => (
-                      <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#12141c", borderRadius: 10, border: "1px solid #2a2d3a" }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 8, background: r.tip === "venit" ? "#1a3a2a" : "#3a1a1a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
-                          {r.tip === "venit" ? "↑" : "↓"}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{r.descriere || r.categorie}</div>
-                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                            <span className={`badge badge-${r.tip === "venit" ? "venit" : "cheltuiala"}`}>{r.categorie}</span>
-                            <span style={{ fontSize: 11, color: CULORI_PERSOANE[r.persoana] || "#888", fontWeight: 500 }}>👤 {r.persoana}</span>
+                      <div key={r.id}>
+                        {editandId === r.id ? (
+                          <div style={{ background: "#12141c", borderRadius: 10, border: "1px solid #4a90d9", padding: "12px" }}>
+                            <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+                              <button className={`tip-btn ${formEdit.tip === "cheltuiala" ? "activ-cheltuiala" : ""}`} onClick={() => setFormEdit(f => ({ ...f, tip: "cheltuiala", categorie: CATEGORII_CHELTUIELI[0] }))}>↓ Cheltuială</button>
+                              <button className={`tip-btn ${formEdit.tip === "venit" ? "activ-venit" : ""}`} onClick={() => setFormEdit(f => ({ ...f, tip: "venit", categorie: CATEGORII_VENITURI[0] }))}>↑ Venit</button>
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                              <input className="input-field" type="number" step="0.01" inputMode="decimal" placeholder="Sumă" value={formEdit.suma} onChange={e => setFormEdit(f => ({ ...f, suma: e.target.value }))} />
+                              <select className="input-field" value={formEdit.categorie} onChange={e => setFormEdit(f => ({ ...f, categorie: e.target.value }))}>
+                                {(formEdit.tip === "venit" ? CATEGORII_VENITURI : CATEGORII_CHELTUIELI).map(c => <option key={c}>{c}</option>)}
+                              </select>
+                              <input className="input-field" type="text" placeholder="Descriere" value={formEdit.descriere} onChange={e => setFormEdit(f => ({ ...f, descriere: e.target.value }))} />
+                              <select className="input-field" value={formEdit.persoana} onChange={e => setFormEdit(f => ({ ...f, persoana: e.target.value }))}>
+                                {PERSOANE.map(p => <option key={p}>{p}</option>)}
+                              </select>
+                              <div style={{ display: "flex", gap: 8 }}>
+                                <button className="btn-add" style={{ flex: 1, padding: "10px" }} onClick={() => salveazaEditare(r.id)}>✓ Salvează</button>
+                                <button className="btn-delete" style={{ padding: "10px 16px" }} onClick={() => setEditandId(null)}>Anulează</button>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: r.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
-                          {r.tip === "venit" ? "+" : "-"}{formatRon(r.suma)}
-                        </div>
-                        <button className="btn-delete" onClick={() => stergeRecurenta(r.id)}>✕</button>
+                        ) : (
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#12141c", borderRadius: 10, border: "1px solid #2a2d3a" }}>
+                            <div style={{ width: 32, height: 32, borderRadius: 8, background: r.tip === "venit" ? "#1a3a2a" : "#3a1a1a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
+                              {r.tip === "venit" ? "↑" : "↓"}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{r.descriere || r.categorie}</div>
+                              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                                <span className={`badge badge-${r.tip === "venit" ? "venit" : "cheltuiala"}`}>{r.categorie}</span>
+                                <span style={{ fontSize: 11, color: CULORI_PERSOANE[r.persoana] || "#888", fontWeight: 500 }}>👤 {r.persoana}</span>
+                              </div>
+                            </div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: r.tip === "venit" ? "#2ecc71" : "#e05c4a", flexShrink: 0 }}>
+                              {r.tip === "venit" ? "+" : "-"}{formatRon(r.suma)}
+                            </div>
+                            <button className="btn-delete" style={{ marginRight: 2 }} onClick={() => incepeEditare(r)}>✏️</button>
+                            <button className="btn-delete" onClick={() => stergeRecurenta(r.id)}>✕</button>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -469,7 +508,7 @@ function AppInner() {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   <div>
                     <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Sumă (RON)</label>
-                    <input className="input-field" type="number" inputMode="decimal" placeholder="ex: 1500" value={formRec.suma} onChange={e => setFormRec(f => ({ ...f, suma: e.target.value }))} />
+                    <input className="input-field" type="number" inputMode="decimal" step="0.01" placeholder="ex: 1500" value={formRec.suma} onChange={e => setFormRec(f => ({ ...f, suma: e.target.value }))} />
                   </div>
                   <div>
                     <label style={{ fontSize: 12, color: "#888", display: "block", marginBottom: 6 }}>Categorie</label>
